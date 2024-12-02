@@ -1,0 +1,30 @@
+- name: Ensure groups exist
+  ansible.builtin.group:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ users | map(attribute='groups') | flatten | unique }}"
+
+- name: Manage users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell }}"
+    state: "{{ item.state }}"
+    groups: "{{ item.groups | join(',') }}"
+  loop: "{{ users }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Add SSH public keys
+  ansible.builtin.authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.public_key }}"
+    state: present
+  loop: "{{ users }}"
+  when: item.public_key is defined
+
+- name: Add user1 to sudoers without password
+  lineinfile:
+    path: /etc/sudoers
+    regexp: "^user1"
+    line: "user1 ALL=(ALL) NOPASSWD:ALL"
+    state: present

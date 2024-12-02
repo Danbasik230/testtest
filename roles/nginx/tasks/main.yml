@@ -1,0 +1,36 @@
+- name: Install Nginx
+  ansible.builtin.package:
+    name: nginx
+    state: present
+
+- name: Deploy nginx.conf
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Deploy static site configuration
+  ansible.builtin.template:
+    src: static_site.conf.j2
+    dest: /etc/nginx/sites-available/static_site
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable static site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/static_site
+    dest: /etc/nginx/sites-enabled/static_site
+    state: link
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Restart Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

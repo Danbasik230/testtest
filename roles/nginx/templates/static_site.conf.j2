@@ -1,0 +1,12 @@
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/static;
+    index index.html;
+
+    location / {
+        autoindex on;
+        add_header Cache-Control "max-age=3600";
+    }
+}

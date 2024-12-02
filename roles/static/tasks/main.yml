@@ -1,0 +1,5 @@
+- name: Download static images
+  get_url:
+    url: "{{ item }}"
+    dest: "/var/www/static/"
+  with_items: "{{ static_images }}"

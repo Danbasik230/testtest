@@ -1,0 +1,40 @@
+- hosts: all
+  become: yes
+  become_user: root
+  tasks:
+
+  - name: Deploy SSH configuration
+    ansible.builtin.copy:
+      src: files/sshd_config
+      dest: /etc/ssh/sshd_config
+      owner: root
+      group: root
+      mode: '0644'
+
+  - name: Validate SSH configuration
+    command: sshd -t
+    register: ssh_config_check
+    failed_when: ssh_config_check.rc != 0
+    changed_when: false
+
+  - name: Test user1 connectivity
+    debug:
+      msg: "Testing user1 connectivity..."
+    delegate_to: localhost
+
+  - name: Test SSH connectivity for user1
+    wait_for:
+      host: "{{ ansible_host | default('127.0.0.1') }}"
+      port: 22
+      timeout: 10
+    register: ssh_connection_test
+
+  - name: Fail if user1 cannot connect
+    fail:
+      msg: "User1 cannot connect to the server!"
+    when: ssh_connection_test.elapsed > 10
+
+  - name: Restart SSH service
+    ansible.builtin.service:
+      name: ssh
+      state: restarted

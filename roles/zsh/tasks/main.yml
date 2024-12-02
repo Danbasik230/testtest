@@ -1,0 +1,12 @@
+- name: Install ZSH for specified users
+  ansible.builtin.package:
+    name: zsh
+    state: present
+
+- name: Install Oh My Zsh
+  shell: |
+    wget https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh -O - | zsh
+  args:
+    executable: /bin/bash
+  when: not (ansible_facts['user_dir'] ~ "/.oh-my-zsh")
+  with_items: "{{ zsh_users }}"
